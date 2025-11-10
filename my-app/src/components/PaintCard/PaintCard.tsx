@@ -13,9 +13,9 @@ interface PaintCardProps {
 export default function PaintCard({ paint, currentRequestID, onAddToRequest }: PaintCardProps) {
   const [imageError, setImageError] = useState(false);
   
-  const getImageUrl = (filename: string) => {
-    if (!filename) return defaultPaintImage;
-    return `http://localhost:9000/paints/${filename}`;
+  const getImageUrl = (photo: string) => {
+    if (!photo) return defaultPaintImage;
+    return `http://localhost:9000/paints/${photo}`;
   };
 
   const [imageUrl, setImageUrl] = useState(getImageUrl(paint.photo));
@@ -47,7 +47,6 @@ export default function PaintCard({ paint, currentRequestID, onAddToRequest }: P
         <img 
           src={imageError ? defaultPaintImage : imageUrl}
           alt={paint.title}
-          className="paint-image"
           onError={handleImageError}
         />
       </div>

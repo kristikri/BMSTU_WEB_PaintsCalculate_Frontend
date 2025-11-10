@@ -14,12 +14,12 @@
 }
 
 .button {
-    width: 50px;
-    height: 50px;
+    width: 30px;
+    height: 30px;
     background-color: black;
     border: none;
 }
 
 .search-logo {
-    width: 50%;
+    width: 30%;
 }

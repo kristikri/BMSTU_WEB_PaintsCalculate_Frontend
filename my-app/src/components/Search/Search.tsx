@@ -1,5 +1,5 @@
 import './Search.css';
-
+import searchlogo from "../../assets/search.png"
 interface SearchProps {
   query: string;
   onQueryChange: (query: string) => void;
@@ -23,7 +23,7 @@ export default function Search({ query, onQueryChange, onSearch }: SearchProps) 
         onChange={(e) => onQueryChange(e.target.value)}
       />
       <button type="submit" className="button">
-        <img src="/static/img/search.png" alt="Поиск" className="search-logo" />
+        <img src={searchlogo} alt="Поиск" className="search-logo" />
       </button>
     </form>
   );

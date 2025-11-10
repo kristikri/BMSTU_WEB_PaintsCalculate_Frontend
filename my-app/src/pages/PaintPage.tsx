@@ -8,6 +8,7 @@ import { Spinner } from 'react-bootstrap';
 import Header from '../components/Header/Header';
 import { PAINTS_MOCK } from '../modules/mock';
 import './PaintPage.css';
+import defaultPaintImage from '../assets/default_paint.png';
 
 export default function PaintPage() {
   const [paint, setPaint] = useState<Paint | null>(null);
@@ -43,7 +44,7 @@ export default function PaintPage() {
 
 
   const getImageUrl = (filename: string) => {
-    if (!filename || imageError) return '/src/assets/error_paint.png';
+    if (!filename || imageError) return defaultPaintImage;
     return `http://localhost:9000/test/${filename}`;
   };
 
@@ -89,8 +90,8 @@ export default function PaintPage() {
           <img 
             src={getImageUrl(paint.photo)} 
             alt={paint.title}
-            className="paint-image"
             onError={handleImageError}
+            onLoad={() => console.log("Src:", getImageUrl(paint.photo))}
           />
         </div>
         <div className="paint-info">

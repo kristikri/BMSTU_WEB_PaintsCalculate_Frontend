@@ -1,8 +1,9 @@
 import type { Paint } from "./PaintsTypes";
+import { PAINTS_MOCK } from "./mock";
 
 export async function listPaints(params?: { title?: string}): Promise<Paint[]> {
   try {
-    let path = "/api/v1/paints";
+    let path = "api/v1/paints";
     if (params) {
       const query = new URLSearchParams();
       if (params.title) query.append("paint_title", params.title);
@@ -14,7 +15,14 @@ export async function listPaints(params?: { title?: string}): Promise<Paint[]> {
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     return await res.json();
   } catch (err) {
-    return [];
+    console.log('API недоступен, используем моки');
+    let filteredMock = PAINTS_MOCK;
+    if (params?.title) {
+      filteredMock = PAINTS_MOCK.filter(paint =>
+        paint.title.toLowerCase().includes(params.title!.toLowerCase())
+      );
+    }
+    return filteredMock;
   }
 }
 

@@ -22,13 +22,14 @@ export default function PaintsPage() {
       const apiData = await listPaints({ title: searchQuery });
       
 
-      let filteredData = apiData;
+      let dataToDisplay = apiData.length > 0 ? apiData : PAINTS_MOCK;
       if (searchQuery) {
-        filteredData = apiData.filter(paint =>
-          paint.title.toLowerCase().includes(searchQuery.toLowerCase())
-        );
-      }
-      dispatch(setPaints(filteredData));
+      dataToDisplay = dataToDisplay.filter(paint =>
+        paint.title.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+    }
+    
+    dispatch(setPaints(dataToDisplay));
     
   } catch (error) {
     // Тот же подход для моков

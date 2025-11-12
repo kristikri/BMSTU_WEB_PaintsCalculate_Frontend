@@ -1,32 +1,33 @@
 .paints-container {
-    padding:100px;
-    gap:30px;
-    display: grid;
-    flex-wrap: wrap;
+    padding: 50px;
     background-color: #F2F2F2;
+    min-height: 60vh;
 }
 
-.calculate-button {
-    position:fixed;
-    right:20px;
-    bottom:30px;
-    text-decoration:none;
-    color: #212529;
-    font-size: 20px;
+/* Адаптивность */
+@media (max-width: 1200px) {
+    .paints-container {
+        padding: 40px 30px;
+    }
 }
 
-.calculate-logo {
-    width:80px;
-    height: 80px;
+@media (max-width: 768px) {
+    .paints-container {
+        padding: 30px 20px;
+    }
 }
 
-.inactive-calculate-button{
-    position:fixed;
-    right:20px;
-    bottom:30px;
-    text-decoration:none;
-    color: #888888;
-    font-size: 20px;
+@media (max-width: 480px) {
+    .paints-container {
+        padding: 20px 15px;
+    }
+}
+
+.search-container {
+    display: flex;
+    justify-content: center;
+    padding: 20px 0;
+    background-color: #F2F2F2;
 }
 
 .no-paints {
@@ -37,23 +38,25 @@
     width: 100%;
 }
 
-.services-search {
-    display: flex;
-    justify-content: center;
-    padding: 20px 0;
+.calculate-button {
+    position: fixed;
+    right: 20px;
+    bottom: 30px;
+    text-decoration: none;
+    color: #212529;
+    font-size: 20px;
 }
 
+.calculate-logo {
+    width: 80px;
+    height: 80px;
+}
 
-
-
-
-
-
-
-
-
-
-
-
-
-
+.inactive-calculate-button {
+    position: fixed;
+    right: 20px;
+    bottom: 30px;
+    text-decoration: none;
+    color: #888888;
+    font-size: 20px;
+}

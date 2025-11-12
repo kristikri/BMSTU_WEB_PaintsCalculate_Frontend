@@ -7,7 +7,7 @@ import 'bootstrap/dist/css/bootstrap.min.css'
 
 function App() {
   return (
-    <BrowserRouter>
+    <BrowserRouter basename="/BMSTU_WEB_Frontend">
       <Routes>
         <Route path={ROUTES.HOME} element={<HomePage />} />
         <Route path={ROUTES.PAINTS} element={<PaintsPage />} />

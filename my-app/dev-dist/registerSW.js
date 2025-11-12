@@ -1,0 +1,1 @@
+if('serviceWorker' in navigator) navigator.serviceWorker.register('/BMSTU_WEB_Frontend/dev-sw.js?dev-sw', { scope: '/BMSTU_WEB_Frontend/', type: 'classic' })

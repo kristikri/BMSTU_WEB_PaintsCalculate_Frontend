@@ -47,6 +47,7 @@ export default function PaintCard({ paint, currentRequestID, onAddToRequest }: P
         <img 
           src={imageError ? defaultPaintImage : imageUrl}
           alt={paint.title}
+          className="paint-image"
           onError={handleImageError}
         />
       </div>

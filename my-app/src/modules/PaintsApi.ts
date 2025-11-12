@@ -1,6 +1,6 @@
 import type { Paint } from "./PaintsTypes";
 
-export async function listPaints(params?: { title?: string; date_from?: string; date_to?: string }): Promise<Paint[]> {
+export async function listPaints(params?: { title?: string}): Promise<Paint[]> {
   try {
     let path = "/api/v1/paints";
     if (params) {

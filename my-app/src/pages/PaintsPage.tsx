@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import Header from '../components/Header/Header';
 import Search from '../components/Search/Search';
 import PaintsList from '../components/PaintsList/PaintsList';
@@ -6,62 +6,76 @@ import { BreadCrumbs } from '../components/BreadCrumbs/BreadCrumbs';
 import { ROUTE_LABELS } from '../Routes';
 import { listPaints } from '../modules/PaintsApi';
 import { PAINTS_MOCK } from '../modules/mock'; 
-import type { Paint } from '../modules/PaintsTypes';
+import { useAppDispatch, useAppSelector } from '../store/hooks';
+import { setPaints, setLoading } from '../store/slices/paintsSlice';
+import { setSearchTitle, addToHistory } from '../store/slices/searchSlice';
 import './PaintsPage.css';
 
 export default function PaintsPage() {
-  const [paints, setPaints] = useState<Paint[]>([]);
-  const [searchTitle, setSearchTitle] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [useMock, setUseMock] = useState(false);
+  const dispatch = useAppDispatch();
+  const { paints, loading } = useAppSelector(state => state.paints);
+  const { searchTitle } = useAppSelector(state => state.search);
 
-  useEffect(() => {
-    if (useMock) {
-      setPaints(PAINTS_MOCK);
-    } else {
-      listPaints()
-        .then((data) => {
-          if (data.length > 0) {
-            setPaints(data);
-          } else {
-            setPaints(PAINTS_MOCK);
-            setUseMock(true);
-          }
-        })
-        .catch(() => {
-          setPaints(PAINTS_MOCK);
-          setUseMock(true);
-        });
-    }
-  }, [useMock]);
-
-  const handleSearch = async () => {
-    setLoading(true);
+    const loadData = async (searchQuery?: string) => {
+    dispatch(setLoading(true));
     try {
-      const filtered = await listPaints({ title: searchTitle });
+      const apiData = await listPaints({ title: searchQuery });
       
-      if (filtered.length > 0) {
-        setPaints(filtered);
-        setUseMock(false);
+
+      let filteredData = apiData;
+      if (searchQuery) {
+        filteredData = apiData.filter(paint =>
+          paint.title.toLowerCase().includes(searchQuery.toLowerCase())
+        );
+      }
+      dispatch(setPaints(filteredData));
+    
+  } catch (error) {
+    // Тот же подход для моков
+    let filteredMock = PAINTS_MOCK;
+    if (searchQuery) {
+      filteredMock = PAINTS_MOCK.filter(paint =>
+        paint.title.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+    }
+    dispatch(setPaints(filteredMock));
+  } finally {
+    dispatch(setLoading(false));
+  }
+};
+      /*if (apiData.length > 0) {
+        dispatch(setPaints(apiData));
       } else {
-        if (useMock) {
-          const filteredMock = PAINTS_MOCK.filter(paint =>
-            paint.title.toLowerCase().includes(searchTitle.toLowerCase())
+        let filteredMock = PAINTS_MOCK;
+        if (searchQuery) {
+          filteredMock = PAINTS_MOCK.filter(paint =>
+            paint.title.toLowerCase().includes(searchQuery.toLowerCase())
           );
-          setPaints(filteredMock);
-        } else {
-          setPaints([]);
         }
+        dispatch(setPaints(filteredMock));
       }
     } catch (error) {
-      const filteredMock = PAINTS_MOCK.filter(paint =>
-        paint.title.toLowerCase().includes(searchTitle.toLowerCase())
-      );
-      setPaints(filteredMock);
-      setUseMock(true);
+      let filteredMock = PAINTS_MOCK;
+      if (searchQuery) {
+        filteredMock = PAINTS_MOCK.filter(paint =>
+          paint.title.toLowerCase().includes(searchQuery.toLowerCase())
+        );
+      }
+      dispatch(setPaints(filteredMock));
     } finally {
-      setLoading(false);
+      dispatch(setLoading(false));
     }
+  };*/
+
+   useEffect(() => {
+    loadData();
+  }, []);
+
+  const handleSearch = async () => {
+    if (searchTitle) {
+      dispatch(addToHistory(searchTitle));
+    }
+    await loadData(searchTitle);
   };
 
   return (
@@ -80,19 +94,19 @@ export default function PaintsPage() {
         <div className="search-container">
           <Search 
             query={searchTitle}
-            onQueryChange={setSearchTitle}
+            onQueryChange={(value) => dispatch(setSearchTitle(value))}
             onSearch={handleSearch}
           />
         </div>
 
         {loading ? (
-          <div>Загрузка...</div>
+          <div style={{ textAlign: 'center', padding: '20px' }}>Загрузка...</div>
         ) : (
           <div className="paints-container">
             {paints.length > 0 ? (
               <PaintsList paints={paints} />
             ) : (
-              <div className="no-paints">
+              <div className="no-paints"  style={{ textAlign: 'center', padding: '40px' }}>
                 {searchTitle 
                   ? `По запросу "${searchTitle}" краски не найдены` 
                   : 'Краски не найдены'

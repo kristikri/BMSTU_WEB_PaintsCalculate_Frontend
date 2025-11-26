@@ -7,21 +7,31 @@ import { ROUTE_LABELS } from '../Routes';
 import { listPaints } from '../modules/PaintsApi';
 import { PAINTS_MOCK } from '../modules/mock'; 
 import { useAppDispatch, useAppSelector } from '../store/hooks';
-import { setPaints, setLoading } from '../store/slices/paintsSlice';
+import { setPaints, setLoading } from '../store/slices/paintSlice';
 import { setSearchTitle, addToHistory } from '../store/slices/searchSlice';
 import './PaintsPage.css';
+import CalculatorImage from '../assets/calculate.png';
+import { getCalculateCart } from '../store/slices/calculateSlice';
+import { Link } from 'react-router-dom';
 
 export default function PaintsPage() {
   const dispatch = useAppDispatch();
   const { paints, loading } = useAppSelector(state => state.paints);
   const { searchTitle } = useAppSelector(state => state.search);
+  const { isAuthenticated } = useAppSelector(state => state.user);
+  const { calculateCart, paints_count } = useAppSelector(state => state.calculate);
+
+  useEffect(() => {
+  if (isAuthenticated) {
+    dispatch(getCalculateCart());
+    }
+  }, [isAuthenticated, dispatch]);
 
     const loadData = async (searchQuery?: string) => {
     dispatch(setLoading(true));
     try {
       const apiData = await listPaints({ title: searchQuery });
       
-
       let dataToDisplay = apiData.length > 0 ? apiData : PAINTS_MOCK;
       if (searchQuery) {
       dataToDisplay = dataToDisplay.filter(paint =>
@@ -32,7 +42,6 @@ export default function PaintsPage() {
     dispatch(setPaints(dataToDisplay));
     
   } catch (error) {
-    // Тот же подход для моков
     let filteredMock = PAINTS_MOCK;
     if (searchQuery) {
       filteredMock = PAINTS_MOCK.filter(paint =>
@@ -117,6 +126,30 @@ export default function PaintsPage() {
           </div>
         )}
       </div>
+      {isAuthenticated ? (
+        <Link
+          to={calculateCart?.id ? `/calculate/${calculateCart.id}` : '#'} 
+          className={`calculate-button ${!calculateCart?.id ? 'inactive-calculate-button' : ''}`}
+          onClick={(e) => {
+            if (!calculateCart?.id) {
+              e.preventDefault();
+              alert('Корзина пуста');
+            }
+          }}
+        >
+          <img src={CalculatorImage} alt="Раcчеты" className="calculate-logo"/>
+          {paints_count > 0 && (
+            <span className="cart-badge">{paints_count}</span>
+          )}
+        </Link>
+      ) : (
+        <div 
+          className="inactive-calculate-button"
+          onClick={() => alert('Для доступа к расчетам необходимо войти в систему')}
+        >
+          <img src={CalculatorImage} alt="Раcчеты"/>
+        </div>
+      )}
     </div>
   );
 }

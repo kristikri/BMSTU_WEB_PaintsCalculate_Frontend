@@ -3,16 +3,15 @@ import { PAINTS_MOCK } from "./mock";
 
 export async function listPaints(params?: { title?: string}): Promise<Paint[]> {
   try {
-    const API_BASE = "http://192.168.0.102:8080";
-    let path = `${API_BASE}/api/v1/paints`;    
+    let path = "api/v1/paints";    
     if (params) {
       const query = new URLSearchParams();
-      if (params.title) query.append("paint_title", params.title);
+      if (params.title) query.append("title", params.title);
       const queryString = query.toString();
       if (queryString) path += `?${queryString}`;
     }
 
-    const res = await fetch('/api/v1/paints', { headers: { Accept: "application/json" } });
+    const res = await fetch(path, { headers: { Accept: "application/json" } });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     return await res.json();
   } catch (err) {

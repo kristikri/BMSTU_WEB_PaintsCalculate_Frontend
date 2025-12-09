@@ -121,6 +121,21 @@ export default function CalculatePage() {
 
   useEffect(() => {
     if (calculateDetail) {
+        if (isDraft()) {
+          const hasDate =
+            calculateDetail.dateFinish ||
+            calculateDetail.date_calculate;
+
+          if (!hasDate) {
+            const today = new Date().toISOString().split("T")[0];
+
+            setCalculateDate(today);
+            dispatch(updateCalculateDate({
+              calculateId: calculateDetail.id,
+              date: today
+            }));
+          }
+      }
       if (calculateDetail.dateFinish) {
         setCalculateDate(calculateDetail.dateFinish);
       } else if (calculateDetail.date_calculate) {
@@ -181,22 +196,6 @@ export default function CalculatePage() {
     return `http://localhost:9000/paints/${getPaintPhoto(paint)}`;
   };
 
-  const handleSaveDate = async () => {
-    if (!calculateId || !calculateDate || !isDraft()) return;
-    
-    try {
-      await dispatch(updateCalculateDate({
-        calculateId,
-        date: calculateDate
-      })).unwrap();
-      
-      setSuccessMessage('Дата успешно сохранена!');
-      setTimeout(() => setSuccessMessage(''), 3000);
-    } catch (error: any) {
-      setSuccessMessage('Ошибка сохранения даты');
-      setTimeout(() => setSuccessMessage(''), 3000);
-    }
-  };
 
   const handleSavePaintParams = async (paintId: number) => {
     if (!calculateId || !isDraft()) return;
@@ -305,12 +304,6 @@ export default function CalculatePage() {
         <Header />
         <div className="empty-calculate">
           <p>Расчет не найден</p>
-          <button 
-            className="btn-primary-back"
-            onClick={() => navigate('/paints')}
-          >
-            Вернуться к краскам
-          </button>
         </div>
       </div>
     );
@@ -336,7 +329,6 @@ export default function CalculatePage() {
           <h1>Краски для расчета #{calculateDisplayId}</h1>
           <p>Всего красок: {paints.length}</p>
           <p>Статус: <strong>{getStatusText(currentStatus)}</strong></p>
-          <p>Создатель: {calculateDetail?.creator_login || 'Неизвестно'}</p>
           {calculateDetail?.moderator_login && (
             <p>Модератор: {calculateDetail.moderator_login}</p>
           )}
@@ -348,27 +340,7 @@ export default function CalculatePage() {
           </div>
         )}
 
-        <div className="date-section">
-          <div className="date-input-container">
-            <input  
-              type="text" 
-              className="content-list-section date-input"
-              placeholder="Введите дату расчета (ГГГГ-ММ-ДД)" 
-              value={calculateDate}
-              onChange={(e) => setCalculateDate(e.target.value)}
-              disabled={!isDraft()}
-            />
-            {isDraft() && (
-              <button 
-                className="btn-save-date"
-                onClick={handleSaveDate}
-                disabled={saveLoading.date || !calculateDate}
-              >
-                {saveLoading.date ? 'Сохранение...' : 'Сохранить дату'}
-              </button>
-            )}
-          </div>
-        </div>
+        
 
         <div className="calculate-table-header">
           <span className="paint-name-header">Название краски</span>
@@ -496,14 +468,7 @@ export default function CalculatePage() {
                 {submitLoading ? 'Подтверждение...' : 'Подтвердить расчет'}
               </button>
             </>
-          ) : (
-            <button 
-              className="btn-primary-back"
-              onClick={() => navigate('/paints')}
-            >
-              Назад к краскам
-            </button>
-          )}
+          ) : null}
         </div>
       </main>
     </div>

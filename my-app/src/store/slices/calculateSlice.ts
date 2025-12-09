@@ -85,11 +85,11 @@ export const getCalculateCart = createAsyncThunk(
 // Добавить краску в расчет
 export const addToCalculate = createAsyncThunk(
   'calculate/addToCalculate',
-  async (paintId: number, { rejectWithValue, dispatch }) => {
+  async ({ paintId }: { paintId: number }, { rejectWithValue, dispatch }) => {
     try {
       const response = await api.paint.addToCreate(paintId, {
-        area: 10, // Значения по умолчанию
-        layers: 2
+        area: 1,
+        layers: 1
       });
       dispatch(getCalculateCart());
       return response.data;

@@ -45,7 +45,7 @@ export default function PaintCard({ paint}:{paint:Paint}) {
     setAddLoading(true);
     setAddError('');
     try {
-      await dispatch(addToCalculate(paint.id)).unwrap();
+      await dispatch(addToCalculate({paintId: paint.id})).unwrap();
       console.log('Краска добавлена в расчет');
     } catch (error: any) {
       if (error.response?.status === 409) {

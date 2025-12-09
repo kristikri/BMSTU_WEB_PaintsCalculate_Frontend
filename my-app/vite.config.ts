@@ -13,17 +13,17 @@ export default defineConfig({
     },
     proxy: {
       "/api": {
-        target: "http://localhost:8080",
+        target: "https://localhost:8080",
         changeOrigin: true,
-        //rewrite: (path) => path.replace(/^\/api/, "/"),
+        secure:false,
       },
     },
     port: 3000,
-    watch: { // нужно для hot-reload при использовании docker
+    watch: { 
         usePolling: true,
     }, 
-    host: true, // нужно, чтобы правильно работал маппинг портов в docker-контейнере
-    strictPort: true, // необязательно
+    host: true, 
+    strictPort: true, 
   },
   plugins: [
     react(),
@@ -31,7 +31,7 @@ export default defineConfig({
     VitePWA({
       registerType: 'autoUpdate',
       devOptions: {
-        enabled: true,
+        enabled: false,
       },
       manifest:{
         name: "PaintsCalculate",

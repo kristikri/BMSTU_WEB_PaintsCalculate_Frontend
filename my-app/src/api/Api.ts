@@ -34,7 +34,7 @@ export interface ApitypesRequestsPaintJSON {
   id?: number;
   layers?: number;
   paintID?: number;
-  quantity?: number;
+  quantity?: number|null;
   requestID?: number;
 }
 
@@ -396,29 +396,33 @@ export class Api<
   };
   requestPaints = {
     /**
-     * @description Обновляет данные краски в заявке (площадь, слои, количество)
-     *
-     * @tags request-paints
-     * @name RequestPaintsUpdate
-     * @summary Изменить краску в заявке
-     * @request PUT:/request-paints/{request_id}/{paint_id}
-     * @secure
-     */
-    requestPaintsUpdate: (
-      requestId: number,
-      paintId: number,
-      requestPaint: ApitypesRequestsPaintJSON,
-      params: RequestParams = {},
-    ) =>
-      this.request<ApitypesRequestsPaintJSON, Record<string, string>>({
-        path: `/request-paints/${requestId}/${paintId}`,
-        method: "PUT",
-        body: requestPaint,
-        secure: true,
-        type: ContentType.Json,
-        format: "json",
-        ...params,
-      }),
+ * @description Обновляет данные краски в заявке (площадь, слои), кол-во считается асинхронно
+ *
+ * @tags request-paints
+ * @name RequestPaintsUpdate
+ * @summary Изменить параметры краски в заявке
+ * @request PUT:/request-paints/{request_id}/{paint_id}
+ * @secure
+ */
+requestPaintsUpdate: (
+  requestId: number,
+  paintId: number,
+  requestPaint: Omit<ApitypesRequestsPaintJSON, "quantity">, // quantity больше не отправляем
+  params: RequestParams = {},
+) =>
+  this.request<
+    { message: string; status: string }, // ожидаем ответ сервера
+    Record<string, string>
+  >({
+    path: `/request-paints/${requestId}/${paintId}`,
+    method: "PUT",
+    body: requestPaint,
+    secure: true,
+    type: ContentType.Json,
+    format: "json",
+    ...params,
+  }),
+
 
     /**
      * @description Удаляет краску из указанной заявки
@@ -591,6 +595,22 @@ export class Api<
         format: "json",
         ...params,
       }),
+      
+    updatePaintQuantity: (
+      requestId: number,
+      data: { paint_id: number; quantity: number },
+      params: RequestParams = {},
+      ) =>
+      this.request<Record<string, string>, Record<string, string>>({
+        path: `/requests/${requestId}/paint_quantity`,
+        method: "PUT",
+        body: data,
+        secure: true,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
   };
   users = {
     /**

@@ -12,7 +12,7 @@ export default function Header() {
     event.currentTarget.classList.toggle('active');
   };
   
-  const { isAuthenticated, username } = useSelector((state: RootState) => state.user);
+  const { isAuthenticated, username, is_moderator } = useSelector((state: RootState) => state.user);
   const { paints_count } = useSelector((state: RootState) => state.calculate);
   const dispatch = useDispatch<AppDispatch>();
 
@@ -52,6 +52,11 @@ export default function Header() {
                 Профиль
               </NavLink>
               <span className="username">{username}</span>
+                {is_moderator && (
+                  <NavLink to={ROUTES.MODERATOR} className="header__link">
+                    Модератор
+                  </NavLink>
+                )}
               <Link to={ROUTES.HOME} className="header__link logout-btn" onClick={handleLogout}>
                 Выйти
               </Link>
@@ -86,6 +91,11 @@ export default function Header() {
                     <span className="cart-badge">{paints_count}</span>
                   )}
                 </NavLink>
+                {is_moderator && (
+                  <NavLink to={ROUTES.MODERATOR} className="header__link">
+                    Модератор
+                  </NavLink>
+                )}
                 <NavLink to={ROUTES.PROFILE} className="header__link">
                   Профиль
                 </NavLink>

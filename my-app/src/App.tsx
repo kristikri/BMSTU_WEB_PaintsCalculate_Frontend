@@ -8,6 +8,7 @@ import RegistrationPage from './pages/RegistrationPage';
 import CalculatePage from './pages/CalculatePage';
 import CalculatesPage from './pages/CalculatesPage';
 import ProfilePage from './pages/ProfilePage'; 
+import ModeratorPage from "./pages/ModeratorPage";
 import 'bootstrap/dist/css/bootstrap.min.css'
 
 function App() {
@@ -22,6 +23,7 @@ function App() {
         <Route path={ROUTES.CALCULATE} element={<CalculatePage />} />
         <Route path={ROUTES.CALCULATES} element={<CalculatesPage />} />
         <Route path={ROUTES.PROFILE} element={<ProfilePage />} /> 
+        <Route path={ROUTES.MODERATOR} element={<ModeratorPage />} />
       </Routes>
     </BrowserRouter>
   );

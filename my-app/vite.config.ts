@@ -1,22 +1,27 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
-import mkcert from 'vite-plugin-mkcert'
-import fs from 'fs';
-import path from 'path';
+// import mkcert from 'vite-plugin-mkcert'
+// import fs from 'fs';
+// import path from 'path';
 
 export default defineConfig({
   server: {
-    https:{
-      key: fs.readFileSync(path.resolve(__dirname, 'cert.key')),
-      cert: fs.readFileSync(path.resolve(__dirname, 'cert.crt')),
-    },
+    // https:{
+    //   key: fs.readFileSync(path.resolve(__dirname, 'cert.key')),
+    //   cert: fs.readFileSync(path.resolve(__dirname, 'cert.crt')),
+    // },
     proxy: {
       "/api": {
-        target: "https://localhost:8080",
+        target: "http://192.168.195.207:8080",
         changeOrigin: true,
         secure:false,
       },
+      "/test":{
+        target: "http://192.168.195.207:9000",
+        changeOrigin: true,
+        secure:false,
+      }
     },
     port: 3000,
     watch: { 
@@ -27,7 +32,7 @@ export default defineConfig({
   },
   plugins: [
     react(),
-    mkcert(),
+    // mkcert(),
     VitePWA({
       registerType: 'autoUpdate',
       devOptions: {
@@ -36,7 +41,7 @@ export default defineConfig({
       manifest:{
         name: "PaintsCalculate",
         short_name: "PaintsCalculate",
-        start_url: "/BMSTU_WEB_Frontend/",
+        start_url: "/",
         display: "standalone",
         background_color: "#fdfdfd",
         theme_color: "#db4938",
@@ -56,5 +61,5 @@ export default defineConfig({
       }
     })
   ],
-  base:"/BMSTU_WEB_Frontend",
+  base:"",
 })

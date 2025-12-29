@@ -145,7 +145,7 @@
 
 .calculate-table-header {
     display: grid;
-    grid-template-columns: 2fr 1fr 1fr 0.8fr 1fr 0.8fr;
+    grid-template-columns: 2.2fr 1fr 1fr 0.8fr 1fr 0.8fr;
     gap: 20px;
     padding: 20px 50px;
     background-color: #212529;
@@ -171,9 +171,8 @@
 }
 
 .calculate-item {
-    display: grid;
-    grid-template-columns: 2fr 1fr 1fr 0.8fr 1fr 0.8fr;
-    gap: 20px;
+    display: flex;
+    gap: 10px;
     align-items: center;
     padding: 30px;
     background-color: white;
@@ -186,6 +185,7 @@
     text-decoration: none;
     display: flex;
     justify-content: center;
+    width: 120px;
 }
 
 
@@ -223,7 +223,7 @@
 }
 
 .param-input {
-    width: 100%;
+    width: 100px;
     padding: 12px;
     border: 2px solid #eee;
     border-radius: 4px;
@@ -371,6 +371,35 @@
 
 .btn-primary-back:hover {
     background-color: #000;
+}
+.layers-control {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+.layer-btn {
+    width: 36px;
+    height: 36px;
+    border: none;
+    background-color: #212529;
+    color: white;
+    font-size: 20px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.layer-btn:disabled {
+    background-color: #6c757d;
+    cursor: not-allowed;
+}
+
+.layers-value {
+    min-width: 30px;
+    text-align: center;
+    font-size: 16px;
+    font-weight: bold;
 }
 
 /* Адаптивность */

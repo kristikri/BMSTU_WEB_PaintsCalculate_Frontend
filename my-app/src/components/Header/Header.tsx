@@ -44,9 +44,6 @@ export default function Header() {
             <div className="user-menu">
               <NavLink to={ROUTES.CALCULATES} className="header__link">
                 Мои расчеты
-                {paints_count > 0 && (
-                  <span className="cart-badge">{paints_count}</span>
-                )}
               </NavLink>
               <NavLink to={ROUTES.PROFILE} className="header__link">
                 Профиль

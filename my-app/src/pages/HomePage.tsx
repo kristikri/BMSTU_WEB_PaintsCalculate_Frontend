@@ -13,9 +13,9 @@ export const HomePage: FC = () => {
       />
       <div className="home-banner">
         <div className="banner-content">
-          <h1>Paints</h1>
+          <h1>CalculatePaints</h1>
           <p>
-            Здесь вы можете посчитать необходимое количество краски для покраски фасада.
+            Сервис, короый поможет вам посчитать необходимое количество краски для покраски фасада.
           </p>
         </div>
         <div className="banner-overlay"></div>

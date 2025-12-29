@@ -10,6 +10,8 @@
  * ---------------------------------------------------------------
  */
 
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
 export interface ApitypesPaintJSON {
   description?: string;
   hiding_power?: number;
@@ -118,7 +120,7 @@ export class HttpClient<SecurityDataType = unknown> {
   }: ApiConfig<SecurityDataType> = {}) {
     this.instance = axios.create({
       ...axiosConfig,
-      baseURL: axiosConfig.baseURL || "",
+      baseURL: API_BASE_URL,
     });
     this.secure = secure;
     this.format = format;

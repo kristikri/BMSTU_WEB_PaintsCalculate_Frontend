@@ -20,33 +20,73 @@ interface Calculate {
 
 export default function CalculatesPage() {
   const navigate = useNavigate();
-  
-  const { isAuthenticated, username } = useAppSelector(state => state.user);
+
+  const { isAuthenticated, username} = useAppSelector(state => state.user);
   const [calculates, setCalculates] = useState<Calculate[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
+
+  const checkIsModerator = async (username: string): Promise<boolean> => {
+    try {
+      const response = await api.users.profileList();
+
+      const user = Array.isArray(response.data)
+        ? response.data.find((u: any) => u.login === username)
+        : response.data;
+
+      if (!user) {
+        console.warn(`Пользователь ${username} не найден в БД`);
+        return false;
+      }
+
+      return Boolean(user.is_moderator);
+    } catch (error) {
+      console.error('Ошибка проверки прав модератора:', error);
+      return false;
+    }
+  };
+
 
   useEffect(() => {
     if (!isAuthenticated) {
       navigate('/login');
       return;
     }
-    loadCalculates();
+    const load = async () => {
+        const isModerator = await checkIsModerator(username);
+        console.log('Пользователь модератор?', isModerator);
+
+        loadCalculates(isModerator);
+      };
+
+      load();
   }, [isAuthenticated, navigate]);
 
-  const loadCalculates = async () => {
+  const loadCalculates = async (isModerator: boolean) => {
     setLoading(true);
     setError('');
-    
+
     try {
       const response = await api.requests.requestsList();
-      
-      // Фильтруем: убираем черновики И показываем только расчеты текущего пользователя
-      const filteredCalculates = response.data.filter((calculate: Calculate) => 
-        calculate.status !== 'draft' && calculate.creator_login === username
-      );
-      
+
+      const mappedCalculates: Calculate[] = response.data.map((c: any) => ({
+        id: c.ID,
+        status: c.Status === 'сформирована' ? 'formed' : c.Status,
+        creator_login: c.creator_login,
+        moderator_login: c.moderator_login,
+        date_create: c.DateCreate,
+        dateFinish: c.DateFinish,
+        dateForm: c.DateForm,
+        min_layers: c.min_layers,
+      }));
+
+      const filteredCalculates = isModerator
+        ? mappedCalculates // Модератор видит все расчеты
+        : mappedCalculates.filter(
+            (calculate) => calculate.status !== 'draft' && calculate.creator_login === username
+          );
+
       setCalculates(filteredCalculates);
     } catch (error: any) {
       setError(error.response?.data?.description || 'Ошибка загрузки расчетов');
@@ -54,6 +94,7 @@ export default function CalculatesPage() {
       setLoading(false);
     }
   };
+
 
   const getStatusText = (status: string | undefined) => {
     if (!status) return 'Неизвестно';
@@ -175,7 +216,7 @@ export default function CalculatesPage() {
               <tbody>
                 {filteredCalculates.map((calculate) => (
                   <tr 
-                    key={calculate.id}
+                    key={calculate.id ?? Math.random()}
                     className="calculate-row"
                     onClick={() => calculate.id && handleCalculateClick(calculate.id)}
                   >

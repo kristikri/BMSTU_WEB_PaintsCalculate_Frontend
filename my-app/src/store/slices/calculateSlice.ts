@@ -1,24 +1,18 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { api } from '../../api';
 
-interface Paint {
-  id: number;
-  title: string;
-  description: string;
-  hiding_power: number;
-  photo: string;
-  is_delete: boolean;
+interface RequestPaint {
+  ID?: number;
+  Area?: number;
+  Layers?: number;
+  PaintID?: number;
+  Quantity?: number;
+  RequestID?: number;
+  paint_title?: string;
+  paint_photo?: string;
+  hiding_power?: number;
 }
 
-interface RequestPaint {
-  id?: number;
-  area?: number;
-  layers?: number;
-  paintID?: number;
-  quantity?: number;
-  requestID?: number;
-  paint?: Paint;
-}
 
 interface CalculateCart {
   id?: number;
@@ -31,14 +25,19 @@ interface CalculateCart {
 }
 
 interface CalculateDetail {
-  id: number;
-  count: number;
-  requestPaints?: RequestPaint[];
-  paints?: RequestPaint[];
-  date_calculate?: string;
-  min_layers?: number;
-  [key: string]: any;
+  request: {
+    ID: number;
+    Status: string;
+    DateCreate: string | null;
+    DateForm: string | null;
+    DateFinish: string | null;
+    creator_login: string;
+    moderator_login: string | null;
+    min_layers: number;
+  };
+  requestPaints: RequestPaint[];
 }
+
 
 interface CalculateState {
   calculate_id?: number;
@@ -85,7 +84,7 @@ export const getCalculateCart = createAsyncThunk(
 // Добавить краску в расчет
 export const addToCalculate = createAsyncThunk(
   'calculate/addToCalculate',
-  async ({ paintId }: { paintId: number }, { rejectWithValue, dispatch }) => {
+  async (paintId : number, { rejectWithValue, dispatch }) => {
     try {
       const response = await api.paint.addToCreate(paintId, {
         area: 1,
@@ -122,21 +121,19 @@ export const getCalculateDetail = createAsyncThunk(
   async (calculateId: number, { rejectWithValue }) => {
     try {
       const response = await api.requests.requestsDetail(calculateId);
-      const data = response.data;
-      const normalizedData: CalculateDetail = {
-        id: data.id,
-        count: data.count || data.paints_count || 0,
-        requestPaints: data.requestPaints || data.paints || [],
-        date_calculate: data.date_calculate,
-        min_layers: data.min_layers,
-        ...data
+
+      return {
+        request: response.data.request,
+        requestPaints: response.data.requestPaints,
       };
-      return normalizedData;
     } catch (error: any) {
-      return rejectWithValue(error.response?.data?.description || 'Ошибка загрузки расчета');
+      return rejectWithValue(
+        error.response?.data?.description || 'Ошибка загрузки расчета'
+      );
     }
   }
 );
+
 
 // Удалить расчет
 export const deleteCalculate = createAsyncThunk(
@@ -151,13 +148,13 @@ export const deleteCalculate = createAsyncThunk(
   }
 );
 
-// Обновить дату расчета
-export const updateCalculateDate = createAsyncThunk(
-  'calculate/updateCalculateDate',
-  async ({ calculateId, date }: { calculateId: number; date: string }, { rejectWithValue }) => {
+// Обновить минимальное количество слоёв
+export const updateCalculateLayers = createAsyncThunk(
+  'calculate/updateCalculateLayers',
+  async ({ calculateId, min_layers }: { calculateId: number; min_layers: number }, { rejectWithValue }) => {
     try {
       const response = await api.requests.changePaintRequestUpdate(calculateId, {
-        dateFinish: date
+        min_layers: min_layers
       });
       return response.data;
     } catch (error: any) {
@@ -224,20 +221,20 @@ const calculateSlice = createSlice({
     removePaintOptimistic: (state, action) => {
       const paintId = action.payload;
       if (state.calculateDetail) {
-        const paints = state.calculateDetail.requestPaints || state.calculateDetail.paints || [];
-        const updatedPaints = paints.filter(paint => paint.paintID !== paintId);
+        const paints = state.calculateDetail.requestPaints  || [];
+        const updatedPaints = paints.filter(paint => paint.PaintID !== paintId);
         
         if (state.calculateDetail.requestPaints) {
           state.calculateDetail.requestPaints = updatedPaints;
         }
-        if (state.calculateDetail.paints) {
-          state.calculateDetail.paints = updatedPaints;
+        if (state.calculateDetail.requestPaints) {
+          state.calculateDetail.requestPaints = updatedPaints;
         }
-        state.calculateDetail.count = updatedPaints.length;
+        state.calculateDetail.requestPaints.length = updatedPaints.length;
       }
     },
     revertPaintRemoval: (state) => {
-      if (state.calculateDetail?.id) {
+      if (state.calculateDetail?.request.ID) {
         // Можно добавить логику для восстановления состояния
       }
     }
@@ -269,9 +266,9 @@ const calculateSlice = createSlice({
         state.error = null;
         state.calculateDetail = null;
       })
-      .addCase(getCalculateDetail.fulfilled, (state, action) => {
-        state.loading = false;
-        state.calculateDetail = action.payload;
+     .addCase(getCalculateDetail.fulfilled, (state, action) => {
+      state.loading = false;
+      state.calculateDetail = action.payload;
       })
       .addCase(getCalculateDetail.rejected, (state, action) => {
         state.loading = false;
@@ -296,18 +293,18 @@ const calculateSlice = createSlice({
         state.error = action.payload as string;
       })
       
-      // updateCalculateDate
-      .addCase(updateCalculateDate.pending, (state) => {
+      // updateCalculateLayers
+      .addCase(updateCalculateLayers.pending, (state) => {
         state.saveLoading.date = true;
         state.error = null;
       })
-      .addCase(updateCalculateDate.fulfilled, (state, action) => {
+      .addCase(updateCalculateLayers.fulfilled, (state, action) => {
         state.saveLoading.date = false;
         if (state.calculateDetail) {
-          state.calculateDetail.date_calculate = action.meta.arg.date;
+          state.calculateDetail.request.min_layers = action.meta.arg.min_layers;
         }
       })
-      .addCase(updateCalculateDate.rejected, (state, action) => {
+      .addCase(updateCalculateLayers.rejected, (state, action) => {
         state.saveLoading.date = false;
         state.error = action.payload as string;
       })
@@ -323,13 +320,13 @@ const calculateSlice = createSlice({
         state.saveLoading.paints[paintId] = false;
         
         if (state.calculateDetail) {
-          const paints = state.calculateDetail.requestPaints || state.calculateDetail.paints || [];
+          const paints = state.calculateDetail.requestPaints || [];
           const updatedPaints = paints.map(paint => 
-            paint.paintID === paintId 
+            paint.PaintID === paintId 
               ? { 
                   ...paint, 
-                  area: action.meta.arg.area,
-                  layers: action.meta.arg.layers
+                  Area: action.meta.arg.area,
+                  Layers: action.meta.arg.layers
                 }
               : paint
           );
@@ -337,8 +334,8 @@ const calculateSlice = createSlice({
           if (state.calculateDetail.requestPaints) {
             state.calculateDetail.requestPaints = updatedPaints;
           }
-          if (state.calculateDetail.paints) {
-            state.calculateDetail.paints = updatedPaints;
+          if (state.calculateDetail.requestPaints) {
+            state.calculateDetail.requestPaints = updatedPaints;
           }
         }
       })

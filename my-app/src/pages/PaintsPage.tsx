@@ -87,7 +87,7 @@ export default function PaintsPage() {
     }
     await loadData(searchTitle);
   };
-
+ 
   return (
     <div className="paints">
       <Header />
@@ -133,7 +133,6 @@ export default function PaintsPage() {
           onClick={(e) => {
             if (!calculateCart?.id) {
               e.preventDefault();
-              alert('Корзина пуста');
             }
           }}
         >
@@ -145,9 +144,9 @@ export default function PaintsPage() {
       ) : (
         <div 
           className="inactive-calculate-button"
-          onClick={() => alert('Для доступа к расчетам необходимо войти в систему')}
+          onClick={() => console.log({ paints_count: 0, id: -1 })}
         >
-          <img src={CalculatorImage} alt="Раcчеты"/>
+          <img src={CalculatorImage} alt="Раcчёты"/>
         </div>
       )}
     </div>

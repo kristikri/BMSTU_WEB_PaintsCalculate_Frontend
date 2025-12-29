@@ -45,7 +45,7 @@ export default function PaintPage() {
 
   const getImageUrl = (filename: string) => {
     if (!filename || imageError) return defaultPaintImage;
-    return `http://localhost:9000/test/${filename}`;
+    return `http://192.168.195.207:9000/test/${filename}`;
   };
 
   const handleImageError = () => {

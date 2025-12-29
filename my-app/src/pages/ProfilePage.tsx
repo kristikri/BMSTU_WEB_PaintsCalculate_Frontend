@@ -170,20 +170,18 @@ export default function ProfilePage() {
                   id="currentPassword"
                   value={currentPassword}
                   onChange={(e) => setCurrentPassword(e.target.value)}
-                  placeholder="Введите текущий пароль"
                   required
                   disabled={changingPassword}
                 />
               </div>
 
               <div className="form-group">
-                <label htmlFor="newPassword">Новый пароль</label>
+                <label htmlFor="newPassword">Новый пароль (мин. 6 символов)</label>
                 <input
                   type="password"
                   id="newPassword"
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
-                  placeholder="Введите новый пароль (мин. 6 символов)"
                   required
                   minLength={6}
                   disabled={changingPassword}
@@ -197,7 +195,6 @@ export default function ProfilePage() {
                   id="confirmPassword"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
-                  placeholder="Повторите новый пароль"
                   required
                   disabled={changingPassword}
                 />

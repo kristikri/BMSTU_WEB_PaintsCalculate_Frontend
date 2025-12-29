@@ -7,30 +7,13 @@ import { useAppDispatch, useAppSelector } from '../store/hooks';
 import { 
   getCalculateDetail, 
   deleteCalculate,
-  updateCalculateDate,
+  updateCalculateLayers,
   updatePaintParams,
   removeFromCalculate,
   formCalculate
 } from '../store/slices/calculateSlice';
 import './CalculatePage.css';
 import defaultPaintImage from '../assets/default_paint.png';
-
-interface RequestPaint {
-  id?: number;
-  area?: number;
-  layers?: number;
-  paintID?: number;
-  quantity?: number;
-  requestID?: number;
-  paint?: {
-    id: number;
-    title: string;
-    description: string;
-    hiding_power: number;
-    photo: string;
-    is_delete: boolean;
-  };
-}
 
 export default function CalculatePage() {
   const { id } = useParams<{ id: string }>();
@@ -40,17 +23,17 @@ export default function CalculatePage() {
   const { calculateDetail, loading, saveLoading, error } = useAppSelector(state => state.calculate);
   const { isAuthenticated } = useAppSelector(state => state.user);
   
-  const [calculateDate, setCalculateDate] = useState('');
   const [paintAreas, setPaintAreas] = useState<{ [key: number]: number }>({});
   const [paintLayers, setPaintLayers] = useState<{ [key: number]: number }>({});
   const [imageErrors, setImageErrors] = useState<{ [key: number]: boolean }>({});
+  const [minLayersValue, setMinLayersValue] = useState<number>(1);
   const [submitLoading, setSubmitLoading] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
 
   const calculateId = id ? parseInt(id, 10) : null;
 
   const getStatusText = (status: string | undefined) => {
-    if (!status) return 'Неизвестно';
+    if (!status) return 'draft';
     
     const statusMap: { [key: string]: string } = {
       'draft': 'Черновик',
@@ -63,46 +46,40 @@ export default function CalculatePage() {
   };
 
   const isDraft = () => {
-    const status = calculateDetail?.status;
-    return status === 'draft';
+    const status = calculateDetail?.request?.Status;
+    return status === 'draft' || status === 'черновик';
   };
+  const minLayers = calculateDetail?.request?.min_layers ?? 1;
 
-  const getPaints = (): RequestPaint[] => {
-    if (!calculateDetail) return [];
-    
-    const requestPaints = calculateDetail.requestPaints || calculateDetail.paints || [];
-    return requestPaints;
+  const getPaints = () => {
+    return calculateDetail?.requestPaints || [];
   };
 
   // Безопасное получение ID краски
-  const getPaintId = (paint: RequestPaint): number => {
-    return paint.paintID || paint.id || 0;
+  const getPaintId = (paint: any): number => {
+    return paint.PaintID;
   };
 
   // Безопасное получение названия краски
-  const getPaintTitle = (paint: RequestPaint): string => {
-    return paint.paint?.title || 'Неизвестная краска';
+  const getPaintTitle = (paint: any): string => {
+    return paint.paint_title || 'Неизвестная краска';
   };
 
   // Безопасное получение укрывистости
-  const getHidingPower = (paint: RequestPaint): number => {
-    return paint.paint?.hiding_power || 0;
+  const getHidingPower = (paint: any): number => {
+    return paint.hiding_power || 0;
   };
 
-  // Безопасное получение фото
-  const getPaintPhoto = (paint: RequestPaint): string => {
-    return paint.paint?.photo || '';
-  };
 
   // Расчет количества краски
-  const calculatePaintQuantity = (paint: RequestPaint) => {
+  const calculatePaintQuantity = (paint: any) => {
     const paintId = getPaintId(paint);
     const area = paintAreas[paintId] || paint.area || 0;
     const layers = paintLayers[paintId] || paint.layers || 0;
     const hidingPower = getHidingPower(paint);
     
     if (area > 0 && layers > 0 && hidingPower > 0) {
-      return (area * layers / hidingPower).toFixed(2);
+      return ((area * layers * hidingPower)/1000).toFixed(2);
     }
     return '—';
   };
@@ -121,50 +98,30 @@ export default function CalculatePage() {
 
   useEffect(() => {
     if (calculateDetail) {
-        if (isDraft()) {
-          const hasDate =
-            calculateDetail.dateFinish ||
-            calculateDetail.date_calculate;
-
-          if (!hasDate) {
-            const today = new Date().toISOString().split("T")[0];
-
-            setCalculateDate(today);
-            dispatch(updateCalculateDate({
-              calculateId: calculateDetail.id,
-              date: today
-            }));
-          }
-      }
-      if (calculateDetail.dateFinish) {
-        setCalculateDate(calculateDetail.dateFinish);
-      } else if (calculateDetail.date_calculate) {
-        setCalculateDate(calculateDetail.date_calculate);
-      }
-      
       const areas: { [key: number]: number } = {};
       const layers: { [key: number]: number } = {};
       const paints = getPaints();
       
       paints.forEach(paint => {
         const paintId = getPaintId(paint);
-        if (paint.area !== undefined && paint.area !== null) {
-          areas[paintId] = paint.area;
+        if (paint.Area !== undefined && paint.Area !== null) {
+          areas[paintId] = paint.Area;
         }
-        if (paint.layers !== undefined && paint.layers !== null) {
-          layers[paintId] = paint.layers;
+        if (paint.Layers !== undefined && paint.Layers !== null) {
+          layers[paintId] = Math.max(paint.Layers ?? minLayers, minLayers);
         }
       });
       
       setPaintAreas(areas);
       setPaintLayers(layers);
+      setMinLayersValue(calculateDetail.request.min_layers);
     }
   }, [calculateDetail]);
 
   const handleAreaChange = (paintId: number, value: string) => {
     if (!isDraft()) return;
     
-    const numValue = parseFloat(value) || 0;
+    const numValue = Math.max(0, parseFloat(value) || 0);
     setPaintAreas(prev => ({
       ...prev,
       [paintId]: numValue
@@ -174,7 +131,7 @@ export default function CalculatePage() {
   const handleLayersChange = (paintId: number, value: string) => {
     if (!isDraft()) return;
     
-    const numValue = parseInt(value) || 0;
+    const numValue = Math.max(minLayers, parseInt(value) || minLayers);
     setPaintLayers(prev => ({
       ...prev,
       [paintId]: numValue
@@ -188,13 +145,14 @@ export default function CalculatePage() {
     }));
   };
 
-  const getImageUrl = (paint: RequestPaint) => {
+  const getImageUrl = (paint: any) => {
     const paintId = getPaintId(paint);
-    if (imageErrors[paintId] || !getPaintPhoto(paint)) {
+    if (imageErrors[paintId] || !paint.paint_photo) {
       return defaultPaintImage;
     }
-    return `http://localhost:9000/paints/${getPaintPhoto(paint)}`;
+    return `http://localhost:9000/test/${paint.paint_photo}`;
   };
+
 
 
   const handleSavePaintParams = async (paintId: number) => {
@@ -298,7 +256,7 @@ export default function CalculatePage() {
     );
   }
 
-  if (!calculateDetail) {
+  if (!calculateDetail || !calculateDetail.request) {
     return (
       <div className="calculate-page">
         <Header />
@@ -310,8 +268,8 @@ export default function CalculatePage() {
   }
 
   const paints = getPaints();
-  const currentStatus = calculateDetail?.status || 'unknown';
-  const calculateDisplayId = calculateDetail?.id || calculateId;
+  const currentStatus = calculateDetail?.request?.Status;
+  const calculateDisplayId = calculateDetail?.request?.ID || calculateId;
 
   return (
     <div className="calculate-page">
@@ -329,9 +287,46 @@ export default function CalculatePage() {
           <h1>Краски для расчета #{calculateDisplayId}</h1>
           <p>Всего красок: {paints.length}</p>
           <p>Статус: <strong>{getStatusText(currentStatus)}</strong></p>
-          {calculateDetail?.moderator_login && (
-            <p>Модератор: {calculateDetail.moderator_login}</p>
+          {calculateDetail?.request.moderator_login && (
+            <p>Модератор: {calculateDetail.request.moderator_login}</p>
           )}
+          <div className="min-layers-control">
+            <label>Минимум слоёв</label>
+            <input
+            type="number"
+            min={1}
+            value={minLayersValue}
+            disabled={!isDraft()}
+            onChange={(e) => setMinLayersValue(Math.max(1, Number(e.target.value)))}
+          />
+          </div>
+
+          <button
+            className="btn-primary-save"
+            disabled={!isDraft()}
+            onClick={async () => {
+              if (!calculateId) return;
+
+              try {
+                await dispatch(
+                    updateCalculateLayers({
+                    calculateId,
+                    min_layers: minLayersValue
+                  })
+                ).unwrap();
+
+                await dispatch(getCalculateDetail(calculateId));
+
+                setSuccessMessage('Минимальное количество слоёв сохранено');
+                setTimeout(() => setSuccessMessage(''), 3000);
+              } catch {
+                setSuccessMessage('Ошибка сохранения min_layers');
+                setTimeout(() => setSuccessMessage(''), 3000);
+              }
+            }}
+          >
+            Сохранить
+          </button>
         </div>
 
         {successMessage && (
@@ -340,10 +335,8 @@ export default function CalculatePage() {
           </div>
         )}
 
-        
-
         <div className="calculate-table-header">
-          <span className="paint-name-header">Название краски</span>
+          <span className="paint-name-header">Краска</span>
           <span className="hiding-power-header">Укрывистость</span>
           <span className="area-header">Площадь, м²</span>
           <span className="layers-header">Слои</span>
@@ -355,8 +348,8 @@ export default function CalculatePage() {
           <ul className="calculate-grid-list">
             {paints.map((paint, index) => {
               const paintId = getPaintId(paint);
-              const areaValue = paintAreas[paintId] ?? paint.area ?? '';
-              const layersValue = paintLayers[paintId] ?? paint.layers ?? '';
+              const areaValue = paintAreas[paintId] ?? paint.Area ?? '';
+              const layersValue = paintLayers[paintId] ?? paint.Layers ?? '';
               const quantity = calculatePaintQuantity(paint);
               
               return (
@@ -384,7 +377,7 @@ export default function CalculatePage() {
                         <input 
                           type="number" 
                           step="0.1"
-                          min="0"
+                          min="0.1"
                           className="content-list-section param-input"
                           placeholder="Площадь" 
                           value={areaValue}
@@ -398,17 +391,29 @@ export default function CalculatePage() {
                     )}
 
                     {isDraft() ? (
-                      <div className="param-input-container">
-                        <input 
-                          type="number" 
-                          step="1"
-                          min="1"
-                          max="10"
-                          className="content-list-section param-input"
-                          placeholder="Слои" 
-                          value={layersValue}
-                          onChange={(e) => handleLayersChange(paintId, e.target.value)}
-                        />
+                      <div className="layers-control">
+                         <button
+                          className="layer-btn"
+                          onClick={() =>
+                            handleLayersChange(paintId, String((layersValue || 1) - 1))
+                          }
+                          disabled={(layersValue || minLayers) <= minLayers}
+                        >
+                          −
+                        </button>
+
+                        <span className="layers-value">
+                          {layersValue || 1}
+                        </span>
+
+                        <button
+                          className="layer-btn"
+                          onClick={() =>
+                            handleLayersChange(paintId, String((layersValue || 1) + 1))
+                          }
+                        >
+                          +
+                        </button>
                       </div>
                     ) : (
                       <div className="layers-value">
@@ -448,7 +453,6 @@ export default function CalculatePage() {
             <p>Нет красок для расчета</p>
           </div>
         )}
-
         <div className="calculate-actions">
           {isDraft() ? (
             <>

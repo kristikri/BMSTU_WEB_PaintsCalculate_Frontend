@@ -6,6 +6,7 @@ interface UserState {
   isAuthenticated: boolean;
   loading: boolean;
   error: string | null;
+  ismoderator: boolean;
 }
 
 const initialState: UserState = {
@@ -13,6 +14,7 @@ const initialState: UserState = {
   isAuthenticated: false,
   loading: false,
   error: null,
+  ismoderator: false,
 };
 
 export const loginUser = createAsyncThunk(
@@ -90,6 +92,7 @@ const userSlice = createSlice({
         state.loading = false;
         state.isAuthenticated = true;
         state.username = action.payload.login || action.meta.arg.login;
+        state.ismoderator = Boolean(action.payload.is_moderator) || false;
       })
       .addCase(loginUser.rejected, (state, action) => {
         state.loading = false;
@@ -105,6 +108,7 @@ const userSlice = createSlice({
         state.loading = false;
         state.isAuthenticated = true;
         state.username = action.payload.login || action.meta.arg.login;
+        state.ismoderator = Boolean(action.payload.is_moderator) || false;
       })
       .addCase(registerUser.rejected, (state, action) => {
         state.loading = false;
@@ -116,6 +120,7 @@ const userSlice = createSlice({
         state.isAuthenticated = false;
         state.username = '';
         state.error = null;
+        state.ismoderator = false;
       })
       .addCase(logoutUser.rejected, (state, action) => {
         state.error = action.payload as string;
@@ -130,6 +135,7 @@ const userSlice = createSlice({
         state.loading = false;
         state.isAuthenticated = true;
         state.username = action.payload.login || '';
+        state.ismoderator = Boolean(action.payload.is_moderator) || false;
       })
       .addCase(getProfile.rejected, (state, action) => {
         state.loading = false;

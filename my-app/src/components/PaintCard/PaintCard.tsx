@@ -19,7 +19,7 @@ export default function PaintCard({ paint}:{paint:Paint}) {
   
   const getImageUrl = (photo: string) => {
     if (!photo) return defaultPaintImage;
-    return `http://localhost:9000/paints/${photo}`;
+    return `http://192.168.195.207:9000/test/${photo}`;
   };
 
   const [imageUrl, setImageUrl] = useState(getImageUrl(paint.photo));
@@ -45,7 +45,7 @@ export default function PaintCard({ paint}:{paint:Paint}) {
     setAddLoading(true);
     setAddError('');
     try {
-      await dispatch(addToCalculate({paintId: paint.id})).unwrap();
+      await dispatch(addToCalculate(paint.id)).unwrap();
       console.log('Краска добавлена в расчет');
     } catch (error: any) {
       if (error.response?.status === 409) {
